@@ -42,12 +42,18 @@ def predict_disease(input_symptoms_list):
 
     raw_probabilities = predictions[0]
 
-    softmax_probabilities = np.exp(raw_probabilities - np.max(raw_probabilities)) / np.sum(np.exp(raw_probabilities - np.max(raw_probabilities))) * 10
+    softmax_probabilities = np.exp(raw_probabilities - np.max(raw_probabilities)) / np.sum(np.exp(raw_probabilities - np.max(raw_probabilities)))
     
     # Get the top 5 predicted diseases
     top_indices = np.argsort(predictions[0])[-5:][::-1]
     top_diseases = label_encoder.inverse_transform(top_indices)
     top_probabilities = softmax_probabilities[top_indices]
+
+    # Normalize the top 5 probabilities to sum to 100%
+    top_probabilities_normalized = (top_probabilities / np.sum(top_probabilities)) * 100
+
+    # Convert probabilities to a more readable format (optional)
+    top_probabilities_normalized = np.round(top_probabilities_normalized, 2)
 
     # Fetch descriptions and unique precautions for top 5 diseases
     descriptions = []
@@ -69,8 +75,8 @@ def predict_disease(input_symptoms_list):
     # Prepare response dictionary
     response = {
         "predictions": [
-            {"disease": disease, "probability": float(probability)*100, "description": desc}
-            for disease, probability, desc in zip(top_diseases, top_probabilities, descriptions)
+            {"disease": disease, "probability": float(probability), "description": desc}
+            for disease, probability, desc in zip(top_diseases, top_probabilities_normalized, descriptions)
         ],
         "precautions": list(unique_precautions)
     }
