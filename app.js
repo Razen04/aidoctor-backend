@@ -3,13 +3,25 @@ const cors = require('cors');
 const { spawn } = require('child_process');
 
 const app = express();
-app.use(cors());
+// Allow all origins for development (restrict in production)
+app.use(cors({
+    origin: "*", // Change to specific domain in production
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+// Handle Preflight requests properly
+app.options("*", cors());
 app.use(express.json()); // Middleware to parse JSON requests
 
 app.post('/predict-disease', (req, res) => {
 
     // Set the response header to prevent caching
     res.set('Cache-Control', 'no-store');
+    res.set("Access-Control-Allow-Origin", "*");
+    res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.status(200).end();
     
     // Extract symptoms from the request body
     const symptoms = req.body.symptoms;
